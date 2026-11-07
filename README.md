@@ -66,4 +66,4 @@ Rien que deux nombres, F et k, décident de tout le paysage. C'est le mécanisme
 
 **La souris.** `ESC[?1002h` demande au terminal de signaler les clics et les glissements, `ESC[?1006h` en format SGR : `ESC[<bouton;x;yM`. Le terminal est passé en mode brut (`termios`, sans écho ni attente de la touche Entrée), sur l'écran alternatif, et tout est restauré à la sortie, même après Ctrl-C. `SIGWINCH` signale un redimensionnement de la fenêtre.
 
-**Les nombres sous-normaux.** Loin des motifs, V tend vers 0 sans jamais l'atteindre, et finit dans les flottants « sous-normaux » (plus petits que 10⁻³⁸), que le processeur traite plus de 20 fois plus lentement. Le motif « vers » passait de 1,6 s à 40 s de calcul. Ramener à 0 tout ce qui passe sous 10⁻²⁰ règle le problème.
+**Les nombres sous-normaux.** Loin des motifs, V tend vers 0 sans jamais l'atteindre, et finit dans les flottants « sous-normaux » (plus petits que 10⁻³⁸), que le processeur traite plus de 20 fois plus lentement. Avec des paramètres où le motif s'éteint, un calcul passait de 1,6 s à 40 s. Ramener à 0 tout ce qui passe sous 10⁻²⁰ règle le problème.
