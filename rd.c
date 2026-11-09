@@ -147,7 +147,7 @@ static void couleur(float v, uint8_t rgb[3]) {
     }
 }
 
-/* image PNG non compressée (pour --export) */
+/* --export : PNG non compressé, ou PPM si le nom finit par .ppm */
 static uint32_t crc_t[256];
 static void be32(FILE *f, uint32_t v) { uint8_t b[4] = {v >> 24, v >> 16, v >> 8, v}; fwrite(b, 1, 4, f); }
 static uint32_t crc(uint32_t c, const uint8_t *b, size_t n) { while (n--) c = crc_t[(c ^ *b++) & 0xFF] ^ (c >> 8); return c; }
@@ -157,7 +157,7 @@ static void chunk(FILE *f, const char *t, const uint8_t *d, size_t n) {
     fwrite(d, 1, n, f);
     be32(f, ~crc(crc(~0u, (const uint8_t *)t, 4), d, n));
 }
-static int exporte_png(const char *chemin, int echelle) {
+static int exporte(const char *chemin, int echelle) {
     for (uint32_t n = 0; n < 256; n++) {
         uint32_t c = n;
         for (int k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320u ^ (c >> 1) : c >> 1;
@@ -170,6 +170,16 @@ static int exporte_png(const char *chemin, int echelle) {
     for (int y = 0; y < h; y++) {
         brut[y * ligne] = 0;
         for (int x = 0; x < w; x++) couleur(V[(y / echelle) * W + x / echelle], brut + y * ligne + 1 + x * 3);
+    }
+    size_t lc = strlen(chemin);
+    if (lc > 4 && !strcmp(chemin + lc - 4, ".ppm")) {
+        FILE *f = fopen(chemin, "wb");
+        if (!f) return -1;
+        fprintf(f, "P6\n%d %d\n255\n", w, h);
+        for (int y = 0; y < h; y++) fwrite(brut + y * ligne + 1, 1, (size_t)w * 3, f);
+        fclose(f);
+        free(brut); free(z);
+        return 0;
     }
     *p++ = 0x78; *p++ = 1;
     uint32_t a = 1, b = 0;
@@ -297,7 +307,7 @@ static void aide(void) {
     puts("rd — réaction-diffusion de Gray-Scott dans le terminal\n\n"
          "  rd [motif]                      animation (motifs : corail mitose labyrinthe solitons vers\n"
          "                                  trous pulsations chaos u-skate, ou carte)\n"
-         "  rd [motif] --export f.png [--etapes N] [--taille LxH] [--palette nom] [--echelle E]\n\n"
+         "  rd [motif] --export f.png|f.ppm [--etapes N] [--taille LxH] [--palette nom] [--echelle E]\n\n"
          "  touches : 1-9 motif, clic gauche dépose du V, clic droit efface, espace pause,\n"
          "            r recommencer, c couleurs, +/- vitesse, m carte des paramètres, q quitter");
 }
@@ -330,7 +340,7 @@ int main(int argc, char **argv) {
         double t0 = maintenant();
         for (int s = 0; s < etapes; s++) pas();
         double dt = maintenant() - t0;
-        if (exporte_png(export, echelle < 1 ? 1 : echelle)) { perror(export); return 1; }
+        if (exporte(export, echelle < 1 ? 1 : echelle)) { perror(export); return 1; }
         fprintf(stderr, "%s : %d pas sur %d×%d en %.2f s (%.0f M cases/s) -> %s\n", carte ? "carte" : PRESETS[preset].nom,
                 etapes, W, H, dt, (double)etapes * W * H / dt / 1e6, export);
         return 0;

@@ -16,6 +16,7 @@ make
 ./rd               # motif « corail »
 ./rd mitose
 ./rd carte         # la carte des paramètres
+./tests.sh         # simule sans terminal et vérifie les images
 ```
 
 | Touche | Effet |
@@ -37,6 +38,8 @@ Sans terminal, on peut aussi calculer une image :
 ```sh
 ./rd vers --export vers.png --etapes 12000 --taille 300x200 --palette glace
 ```
+
+Avec un nom en `.ppm`, l'image sort en PPM (plus simple à relire depuis un script).
 
 ## Ce qui se passe
 
